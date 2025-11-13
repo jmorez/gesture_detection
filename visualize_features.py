@@ -276,6 +276,59 @@ def visualize_3d_feature_space(clf, X_train, y_train):
     fig = plt.figure(figsize=(14, 10))
     ax = fig.add_subplot(111, projection="3d")
 
+    # Create mesh grid for decision boundaries (using only 3 features)
+    # Get data ranges for the 3 most important features
+    x_min, x_max = (
+        X_train[:, top_3_idx[0]].min() - 10,
+        X_train[:, top_3_idx[0]].max() + 10,
+    )
+    y_min, y_max = (
+        X_train[:, top_3_idx[1]].min() - 10,
+        X_train[:, top_3_idx[1]].max() + 10,
+    )
+    z_min, z_max = (
+        X_train[:, top_3_idx[2]].min() - 10,
+        X_train[:, top_3_idx[2]].max() + 10,
+    )
+
+    # Create a coarser grid for decision boundaries (for performance)
+    xx, yy, zz = np.meshgrid(
+        np.linspace(x_min, x_max, 20),
+        np.linspace(y_min, y_max, 20),
+        np.linspace(z_min, z_max, 20),
+    )
+
+    # Prepare full feature vectors for prediction
+    # We need to fill in the missing feature with mean values
+    grid_samples = np.c_[xx.ravel(), yy.ravel(), zz.ravel()]
+
+    # Create full 4D feature vectors by inserting the 3 selected features
+    full_features = np.zeros((grid_samples.shape[0], clf.n_features_in_))
+    for i in range(clf.n_features_in_):
+        if i in top_3_idx:
+            # Use grid value for selected features
+            idx_in_grid = np.where(top_3_idx == i)[0][0]
+            full_features[:, i] = grid_samples[:, idx_in_grid]
+        else:
+            # Use mean value for non-selected features
+            full_features[:, i] = X_train[:, i].mean()
+
+    # Predict on grid
+    Z = clf.predict(full_features)
+    Z = Z.reshape(xx.shape)
+
+    # Plot decision boundaries as semi-transparent surfaces
+    for class_val in range(len(class_names)):
+        # Create isosurface for each class
+        ax.contourf(
+            xx[:, :, 0],
+            yy[:, :, 0],
+            Z[:, :, 0],
+            levels=[class_val - 0.5, class_val + 0.5],
+            colors=[colors[class_val]],
+            alpha=0.1,
+        )
+
     # Plot each class
     for i, (color, name) in enumerate(zip(colors, class_names)):
         mask = y_train == i
@@ -286,7 +339,7 @@ def visualize_3d_feature_space(clf, X_train, y_train):
                 X_train[mask, top_3_idx[2]],
                 c=color,
                 label=name,
-                alpha=0.6,
+                alpha=0.8,
                 s=50,
                 edgecolors="black",
                 linewidth=0.5,
