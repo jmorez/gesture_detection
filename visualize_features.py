@@ -240,6 +240,14 @@ def visualize_feature_space(clf, X_train, y_train):
     plt.tight_layout()
     plt.savefig("feature_space_visualization.png", dpi=150, bbox_inches="tight")
     print("\nVisualization saved as 'feature_space_visualization.png'")
+
+    # Also save to assets folder if it exists
+    if os.path.exists("assets"):
+        plt.savefig(
+            "assets/feature_space_visualization.png", dpi=150, bbox_inches="tight"
+        )
+        print("Also saved to 'assets/feature_space_visualization.png'")
+
     plt.show()
 
 
@@ -360,6 +368,12 @@ def visualize_3d_feature_space(clf, X_train, y_train):
     plt.tight_layout()
     plt.savefig("feature_space_3d.png", dpi=150, bbox_inches="tight")
     print("3D visualization saved as 'feature_space_3d.png'")
+
+    # Also save to assets folder if it exists
+    if os.path.exists("assets"):
+        plt.savefig("assets/feature_space_3d.png", dpi=150, bbox_inches="tight")
+        print("Also saved to 'assets/feature_space_3d.png'")
+
     plt.show()
 
 
