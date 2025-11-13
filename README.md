@@ -25,6 +25,12 @@ The system detects three gesture classes:
 
 ## Installation
 
+**Using uv (recommended):**
+```bash
+uv sync
+```
+
+**Using pip:**
 ```bash
 pip install torch ultralytics opencv-python scikit-learn numpy matplotlib
 ```
