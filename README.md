@@ -67,19 +67,13 @@ Visualize the feature space and decision boundaries:
 python visualize_features.py
 ```
 
-Generates:
-- `feature_space_visualization.png`: 2D feature plots showing hand velocities and heights
-- `feature_space_3d.png`: 3D visualization of the top 3 most important features with decision boundaries
-
 ### Feature Space Visualization
 
-**2D Feature Space**: Shows the distribution of training samples across velocity and height features. As you can see, our features could be improved a lot, as the velocity features seem to be unused. Note that improving our pose estimation as well as the framerate could definitely help here.
-
 ![Feature Space Visualization](assets/feature_space_visualization.png)
-
-**3D Feature Space**: Displays the top 3 most important features with decision boundaries, revealing how the classifier separates different gestures.
+*2D Feature Space showing the distribution of training samples across velocity and height features. As you can see, our features could be improved a lot, as the velocity features seem to be unused. Note that improving our pose estimation as well as the framerate could definitely help here.*
 
 ![3D Feature Space](assets/feature_space_3d.png)
+*3D Feature Space displaying the top 3 most important features with decision boundaries, revealing how the classifier separates different gestures.*
 
 ## Model Architecture
 
