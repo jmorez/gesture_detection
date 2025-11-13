@@ -1,6 +1,6 @@
 # Gesture Detection - A Basic Example Using PyTorch and Scikit-Learn
 
-A real-time gesture detection system that uses YOLO pose estimation and decision tree classification to recognize hand gestures.
+A real-time gesture detection system that uses YOLO pose estimation and decision tree classification to recognize hand gestures. I hacked this together on an afternoon (with ample help of Claude 4.5). At the end of the video below I show a failure mode. 
 
 ## Demo
 
@@ -73,27 +73,13 @@ Generates:
 
 ### Feature Space Visualization
 
-**2D Feature Space**: Shows the distribution of training samples across velocity and height features.
+**2D Feature Space**: Shows the distribution of training samples across velocity and height features. As you can see, our features could be improved a lot, as the velocity features seem to be unused. Note that improving our pose estimation as well as the framerate could definitely help here.
 
 ![Feature Space Visualization](assets/feature_space_visualization.png)
 
 **3D Feature Space**: Displays the top 3 most important features with decision boundaries, revealing how the classifier separates different gestures.
 
 ![3D Feature Space](assets/feature_space_3d.png)
-
-## Project Structure
-
-```
-gesture_detection/
-├── main.py                      # Main script (training & inference)
-├── visualize_features.py        # Feature space visualization
-├── yolov8n-pose.pt             # YOLO pose estimation model
-├── gesture_classifier.pkl       # Trained decision tree model (generated)
-├── assets/
-│   ├── demo.png                # Demo screenshot
-│   └── demo.mp4                # Demo video
-└── README.md
-```
 
 ## Model Architecture
 
