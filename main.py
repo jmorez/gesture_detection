@@ -28,10 +28,10 @@ def extract_features(keypoints, history_left, history_right, conf_threshold=0.5)
     """Extract features for gesture classification.
 
     Features:
-    - Relative position between left and right hands (distance, angle)
-    - Speed of each hand (velocity magnitude)
-    - Hand height relative to shoulders
-    - Distance between hands
+    - Left hand velocity (speed)
+    - Right hand velocity (speed)
+    - Left hand height relative to shoulders
+    - Right hand height relative to shoulders
     """
     # YOLO pose keypoints: 9=left_wrist, 10=right_wrist, 5=left_shoulder, 6=right_shoulder
     left_wrist = keypoints[9]
@@ -67,28 +67,17 @@ def extract_features(keypoints, history_left, history_right, conf_threshold=0.5)
         + (history_right[-1][1] - history_right[-2][1]) ** 2
     )
 
-    # Distance between hands
-    hand_distance = np.sqrt((right_x - left_x) ** 2 + (right_y - left_y) ** 2)
-
     # Relative hand heights to shoulders
     shoulder_y = (float(left_shoulder[1]) + float(right_shoulder[1])) / 2
     left_rel_height = left_y - shoulder_y
     right_rel_height = right_y - shoulder_y
 
-    # Hand position relative to body center
-    body_center_x = (float(left_shoulder[0]) + float(right_shoulder[0])) / 2
-    left_rel_x = left_x - body_center_x
-    right_rel_x = right_x - body_center_x
-
     features = np.array(
         [
             left_vel,  # 0: left hand speed
             right_vel,  # 1: right hand speed
-            hand_distance,  # 2: distance between hands
-            left_rel_height,  # 3: left hand height relative to shoulders
-            right_rel_height,  # 4: right hand height relative to shoulders
-            left_rel_x,  # 5: left hand x position relative to body center
-            right_rel_x,  # 6: right hand x position relative to body center
+            left_rel_height,  # 2: left hand height relative to shoulders
+            right_rel_height,  # 3: right hand height relative to shoulders
         ]
     )
 
@@ -200,8 +189,12 @@ def learning_mode(model, device, cap, width, height):
             is_recording = True
             print("Started recording NOTHING gestures (still hands)...")
         elif key == ord(" "):
-            is_recording = False
-            print(f"Stopped recording. Total samples: {len(labels_list)}")
+            if current_label:
+                is_recording = not is_recording
+                if is_recording:
+                    print(f"Resumed recording {current_label.upper()}...")
+                else:
+                    print(f"Paused recording. Total samples: {len(labels_list)}")
         elif key == ord("s"):
             if len(features_list) > 0:
                 print(f"\nProcessing {len(features_list)} samples...")
