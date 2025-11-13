@@ -96,10 +96,11 @@ def extract_features(keypoints, history_left, history_right, conf_threshold=0.5)
 
 
 def learning_mode(model, device, cap, width, height):
-    """Learning mode: collect training data for waving and applauding."""
+    """Learning mode: collect training data for waving, applauding, and nothing."""
     print("\n=== LEARNING MODE ===")
     print("Press 'w' to START recording WAVING gestures")
     print("Press 'a' to START recording APPLAUDING gestures")
+    print("Press 'n' to START recording NOTHING gestures (still hands)")
     print("Press 'SPACE' to STOP recording")
     print("Press 's' to save and exit")
     print("Press 'q' to quit without saving")
@@ -170,6 +171,9 @@ def learning_mode(model, device, cap, width, height):
             elif current_label == "applauding":
                 features_list.append(features)
                 labels_list.append(1)
+            elif current_label == "nothing":
+                features_list.append(features)
+                labels_list.append(2)
 
         frame_count += 1
         if frame_count >= 10:
@@ -191,6 +195,10 @@ def learning_mode(model, device, cap, width, height):
             current_label = "applauding"
             is_recording = True
             print("Started recording APPLAUDING gestures...")
+        elif key == ord("n"):
+            current_label = "nothing"
+            is_recording = True
+            print("Started recording NOTHING gestures (still hands)...")
         elif key == ord(" "):
             is_recording = False
             print(f"Stopped recording. Total samples: {len(labels_list)}")
@@ -203,6 +211,7 @@ def learning_mode(model, device, cap, width, height):
                 # Print dataset stats
                 print(f"Waving samples: {np.sum(y == 0)}")
                 print(f"Applauding samples: {np.sum(y == 1)}")
+                print(f"Nothing samples: {np.sum(y == 2)}")
 
                 # Split into train/test sets
                 X_train, X_test, y_train, y_test = train_test_split(
@@ -237,10 +246,17 @@ def learning_mode(model, device, cap, width, height):
                         "WARNING: Test accuracy is low. Consider collecting more samples."
                     )
 
-                # Save model
+                # Save model and training data
+                model_data = {
+                    "classifier": clf,
+                    "X_train": X_train,
+                    "y_train": y_train,
+                    "X_test": X_test,
+                    "y_test": y_test,
+                }
                 with open("gesture_classifier.pkl", "wb") as f:
-                    pickle.dump(clf, f)
-                print("Model saved to gesture_classifier.pkl")
+                    pickle.dump(model_data, f)
+                print("Model and training data saved to gesture_classifier.pkl")
 
                 return True
             else:
@@ -263,7 +279,13 @@ def inference_mode(model, device, cap, width, height):
         return
 
     with open("gesture_classifier.pkl", "rb") as f:
-        clf = pickle.load(f)
+        model_data = pickle.load(f)
+
+    # Handle both old and new format
+    if isinstance(model_data, dict):
+        clf = model_data["classifier"]
+    else:
+        clf = model_data
     print("Loaded trained model")
 
     history_left = deque(maxlen=10)
@@ -293,7 +315,12 @@ def inference_mode(model, device, cap, width, height):
 
             if features is not None:
                 prediction = clf.predict([features])[0]
-                gesture_text = "WAVING" if prediction == 0 else "APPLAUDING"
+                if prediction == 0:
+                    gesture_text = "WAVING"
+                elif prediction == 1:
+                    gesture_text = "APPLAUDING"
+                elif prediction == 2:
+                    gesture_text = "NOTHING"
 
             # Draw keypoints
             for i, (x, y, conf) in enumerate(keypoints):
@@ -301,11 +328,14 @@ def inference_mode(model, device, cap, width, height):
                     cv.circle(frame, (int(x), int(y)), 5, (0, 255, 255), -1)
 
         # Display prediction
-        color = (
-            (0, 255, 0)
-            if "WAVING" in gesture_text
-            else (0, 165, 255) if "APPLAUDING" in gesture_text else (255, 255, 255)
-        )
+        if "WAVING" in gesture_text:
+            color = (0, 255, 0)
+        elif "APPLAUDING" in gesture_text:
+            color = (0, 165, 255)
+        elif "NOTHING" in gesture_text:
+            color = (128, 128, 128)
+        else:
+            color = (255, 255, 255)
         cv.putText(
             frame, gesture_text, (10, 50), cv.FONT_HERSHEY_SIMPLEX, 1.5, color, 3
         )
