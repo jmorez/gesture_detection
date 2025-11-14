@@ -104,6 +104,19 @@ python visualize_features.py
 - Lightweight decision tree ensures fast inference
 - 80/20 train/test split with stratified sampling
 
+## Limitations & Future Work
+
+### Feature Engineering
+- Current features could be improved for better gesture discrimination
+- Audio features use raw confidence scores - room for optimization
+
+### Model Optimization
+- **Audio classifier efficiency**: Currently uses full CNN14 model (527 classes) but only extracts 2 relevant classes (Cough, Clapping)
+  - **Model distillation**: Train a smaller specialized model on just the needed audio classes
+  - **Quantization**: Apply INT8 quantization to reduce model size and improve inference speed
+  - Potential speedup: 2-4x faster inference with minimal accuracy loss
+
+
 ## Requirements
 
 - Python 3.8+
