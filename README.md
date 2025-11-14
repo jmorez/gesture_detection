@@ -4,24 +4,32 @@ A real-time gesture detection system that uses YOLO pose estimation and decision
 
 ## Demo
 
+Multimodal gesture detection:
+![Gesture Detection Demo](assets/inference_audio.gif)
+
+Earlier iteration without audio:
 ![Gesture Detection Demo](assets/inference.gif)
 
 ## Features
 
-The system detects three gesture classes:
-- **Waving**: Hand moving side to side
-- **Applauding**: Both hands moving together (clapping motion)
-- **Nothing**: Still hands
+The system detects four classes using multimodal detection (visual + audio):
+- **Waving**: Hand moving side to side (visual)
+- **Applauding**: Both hands moving together with clapping motion (visual + audio)
+- **Nothing**: Still hands, no activity
+- **Cough**: Coughing sounds (audio)
 
 ## How It Works
 
 1. **Pose Estimation**: Uses YOLOv8n-pose to detect body keypoints (wrists and shoulders)
-2. **Feature Extraction**: Extracts 4 features from keypoints:
+2. **Audio Classification**: Uses CNN14 (AudioSet pre-trained) to classify audio events
+3. **Feature Extraction**: Extracts 6 features:
    - Left hand velocity
    - Right hand velocity
    - Left hand height relative to shoulders
    - Right hand height relative to shoulders
-3. **Classification**: Decision tree classifier (max_depth=3) predicts the gesture
+   - Cough confidence (from audio)
+   - Clapping confidence (from audio)
+4. **Classification**: Decision tree classifier (max_depth=3) predicts the gesture/sound
 
 ## Installation
 
@@ -32,7 +40,7 @@ uv sync
 
 **Using pip:**
 ```bash
-pip install torch ultralytics opencv-python scikit-learn numpy matplotlib
+pip install torch ultralytics opencv-python scikit-learn numpy matplotlib librosa pyaudio
 ```
 
 ## Usage
@@ -48,8 +56,9 @@ python main.py
 
 Controls:
 - Press `w` to record WAVING gestures
-- Press `a` to record APPLAUDING gestures
+- Press `a` to record APPLAUDING gestures (visual + clapping audio)
 - Press `n` to record NOTHING gestures (still hands)
+- Press `c` to record COUGH sounds (audio)
 - Press `SPACE` to pause/resume recording
 - Press `s` to save the trained model
 - Press `q` to quit without saving
@@ -76,17 +85,18 @@ python visualize_features.py
 ### Feature Space Visualization
 
 ![Feature Space Visualization](assets/feature_space_visualization.png)
-*2D Feature Space showing the distribution of training samples across velocity and height features. As you can see, our features could be improved a lot, as the velocity features seem to be unused. Note that improving our pose estimation as well as the framerate could definitely help here.*
+*2D Feature Space showing the distribution of training samples across velocity and height features for the 4 classes (waving, applauding, nothing, cough).*
 
 ![3D Feature Space](assets/feature_space_3d.png)
-*3D Feature Space displaying the top 3 most important features with decision boundaries, revealing how the classifier separates different gestures.*
+*3D Feature Space displaying the top 3 most important features from the 6-dimensional feature vector (visual + audio features), revealing how the classifier separates different gestures and sounds.*
 
 ## Model Architecture
 
 - **Pose Estimator**: YOLOv8n-pose
-- **Classifier**: Decision Tree (max_depth=3, min_samples_split=10, min_samples_leaf=5)
-- **Features**: 4 (velocities + relative heights)
-- **Classes**: 3 (waving, applauding, nothing)
+- **Audio Classifier**: CNN14 (AudioSet pre-trained, 527 classes)
+- **Gesture Classifier**: Decision Tree (max_depth=3, min_samples_split=10, min_samples_leaf=5)
+- **Features**: 6 (4 visual + 2 audio)
+- **Classes**: 4 (waving, applauding, nothing, cough)
 
 ## Performance
 
