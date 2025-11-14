@@ -13,6 +13,7 @@ dependencies = [
     "numpy>=1.24.0",
     "librosa>=0.11.0",
     "torchlibrosa>=0.1.0",
+    "pyaudio>=0.2.14",
 ]
 
 [[tool.uv.index]]
