@@ -15,7 +15,7 @@ def get_model():
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     print(f"Using device: {device}")
 
-    model = YOLO("yolov8n-pose.pt")
+    model = YOLO("models/yolov8n-pose.pt")
     return model, device
 
 
